@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Voll.Med - Gestão de Clínica</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- Bootstrap Icons -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+
+    <style>
+      body {
+        background-color: #f8f9fa;
+        padding-top: 70px; /* Espaço para navbar fixa */
+      }
+
+      .section-view {
+        display: none; /* Esconde todas as seções por padrão */
+        animation: fadeIn 0.4s ease-in-out;
+      }
+
+      .section-view.active {
+        display: block; /* Mostra apenas a ativa */
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .card-header-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .table-responsive {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      }
+
+      /* Status badges custom styles */
+      .status-true {
+        color: #198754;
+        font-weight: bold;
+      }
+      .status-false {
+        color: #dc3545;
+        font-weight: bold;
+      }
+
+      #alert-container {
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        z-index: 1050;
+        width: 350px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- NAVBAR -->
+    <nav
+      class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top shadow"
+    >
+      <div class="container">
+        <a class="navbar-brand" href="#">
+          <i class="bi bi-hospital-fill me-2"></i>Voll.Med
+        </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+              <a class="nav-link active" href="#" onclick="router('home')"
+                >Início</a
+              >
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#" onclick="router('pacientes')"
+                >Pacientes</a
+              >
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#" onclick="router('medicos')"
+                >Médicos</a
+              >
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#" onclick="router('consultas')"
+                >Consultas</a
+              >
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- CONTAINER DE ALERTAS -->
+    <div id="alert-container"></div>
+
+    <main class="container py-4">
+      <!-- VIEW: HOME -->
+      <section id="view-home" class="section-view active">
+        <div class="p-5 mb-4 bg-light rounded-3 shadow-sm text-center">
+          <h1 class="display-5 fw-bold text-primary">
+            Bem-vindo ao Sistema Voll.Med
+          </h1>
+          <p class="col-md-8 fs-4 mx-auto">
+            Gerenciamento completo de pacientes, médicos e agendamento de
+            consultas.
+          </p>
+          <div class="d-flex justify-content-center gap-3 mt-4">
+            <button
+              class="btn btn-outline-primary btn-lg"
+              onclick="router('pacientes')"
+            >
+              <i class="bi bi-people"></i> Gerenciar Pacientes
+            </button>
+            <button
+              class="btn btn-primary btn-lg"
+              onclick="router('consultas')"
+            >
+              <i class="bi bi-calendar-check"></i> Agendar Consulta
+            </button>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-4">
+            <div class="card text-center h-100 border-0 shadow-sm">
+              <div class="card-body">
+                <i class="bi bi-people-fill text-info display-4 mb-3"></i>
+                <h5 class="card-title">Pacientes</h5>
+                <p class="card-text">Cadastre e atualize dados de pacientes.</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card text-center h-100 border-0 shadow-sm">
+              <div class="card-body">
+                <i class="bi bi-person-heart text-danger display-4 mb-3"></i>
+                <h5 class="card-title">Médicos</h5>
+                <p class="card-text">
+                  Gerencie o corpo clínico e especialidades.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card text-center h-100 border-0 shadow-sm">
+              <div class="card-body">
+                <i class="bi bi-calendar3 text-success display-4 mb-3"></i>
+                <h5 class="card-title">Agenda</h5>
+                <p class="card-text">Controle de consultas e cancelamentos.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW: PACIENTES -->
+      <section id="view-pacientes" class="section-view">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h2><i class="bi bi-people"></i> Pacientes</h2>
+          <button
+            class="btn btn-primary"
+            onclick="toggleForm('form-paciente-container')"
+          >
+            <i class="bi bi-plus-lg"></i> Novo Paciente
+          </button>
+        </div>
+
+        <!-- Formulário de Cadastro (Collapse) -->
+        <div
+          id="form-paciente-container"
+          class="card mb-4 d-none border-primary"
+        >
+          <div class="card-header bg-primary text-white">
+            Cadastro de Paciente
+          </div>
+          <div class="card-body">
+            <form id="form-paciente" onsubmit="cadastrarPaciente(event)">
+              <fieldset>
+                <legend class="h6 text-muted mb-3">Dados Pessoais</legend>
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label for="paciente-nome" class="form-label"
+                      >Nome Completo</label
+                    >
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="paciente-nome"
+                      required
+                    />
+                  </div>
+                  <div class="col-md-3">
+                    <label for="paciente-cpf" class="form-label">CPF</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="paciente-cpf"
+                      placeholder="000.000.000-00"
+                      required
+                    />
+                  </div>
+                  <div class="col-md-3">
+                    <label for="paciente-telefone" class="form-label"
+                      >Telefone</label
+                    >
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="paciente-telefone"
+                      required
+                    />
+                  </div>
+                  <div class="col-md-6">
+                    <label for="paciente-email" class="form-label"
+                      >E-mail</label
+                    >
+                    <input
+                      type="email"
+                      class="form-control"
+                      id="paciente-email"
+                      required
+                    />
+                  </div>
+                </div>
+              </fieldset>
+
+              <fieldset class="mt-3">
+                <legend class="h6 text-muted mb-3">Endereço</legend>
+                <div class="row g-3">
+                  <div class="col-md-2">
+                    <label for="paciente-cep" class="form-label">CEP</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="paciente-cep"
+                      pattern="\d{8}"
+                      title="Digite apenas números (8 dígitos)"
+                      required
+                    />
+                  </div>
+                  <div class="col-md-6">
+                    <label for="paciente-logradouro" class="form-label"
+                      >Logradouro</label
+                    >
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="paciente-logradouro"
+                      required
+                    />
+                  </div>
+                  <div class="col-md-2">
+                    <label for="paciente-numero" class="form-label"
+                      >Número</label
+                    >
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="paciente-numero"
+                    />
+                  </div>
+                  <div class="col-md-2">
+                    <label for="paciente-uf" class="form-label">UF</label>
+                    <select id="paciente-uf" class="form-select" required>
+                      <option value="">...</option>
+                      <option value="SP">SP</option>
+                      <option value="RJ">RJ</option>
+                      <option value="MG">MG</option>
+                      <option value="PR">PR</option>
+                      <option value="RS">RS</option>
+                    </select>
+                  </div>
+                  <div class="col-md-4">
+                    <label for="paciente-cidade" class="form-label"
+                      >Cidade</label
+                    >
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="paciente-cidade"
+                      required
+                    />
+                  </div>
+                  <div class="col-md-4">
+                    <label for="paciente-bairro" class="form-label"
+                      >Bairro</label
+                    >
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="paciente-bairro"
+                      required
+                    />
+                  </div>
+                  <div class="col-md-4">
+                    <label for="paciente-complemento" class="form-label"
+                      >Complemento</label
+                    >
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="paciente-complemento"
+                    />
+                  </div>
+                </div>
+              </fieldset>
+              <div class="mt-4 text-end">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  onclick="toggleForm('form-paciente-container')"
+                >
+                  Cancelar
+                </button>
+                <button type="submit" class="btn btn-success">
+                  Salvar Paciente
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Tabela de Pacientes -->
+        <div class="table-responsive">
+          <table
+            class="table table-striped table-hover table-bordered align-middle mb-0"
+          >
+            <thead class="table-light">
+              <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>CPF</th>
+                <th>Status</th>
+                <th class="text-center">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-pacientes-body">
+              <!-- Preenchido via JS -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- VIEW: MÉDICOS -->
+      <section id="view-medicos" class="section-view">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h2><i class="bi bi-person-heart"></i> Médicos</h2>
+          <button
+            class="btn btn-primary"
+            onclick="toggleForm('form-medico-container')"
+          >
+            <i class="bi bi-plus-lg"></i> Novo Médico
+          </button>
+        </div>
+
+        <!-- Formulário Médico -->
+        <div id="form-medico-container" class="card mb-4 d-none border-primary">
+          <div class="card-header bg-primary text-white">
+            Cadastro de Médico
+          </div>
+          <div class="card-body">
+            <form id="form-medico" onsubmit="cadastrarMedico(event)">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="medico-nome" class="form-label">Nome</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="medico-nome"
+                    required
+                  />
+                </div>
+                <div class="col-md-6">
+                  <label for="medico-email" class="form-label">Email</label>
+                  <input
+                    type="email"
+                    class="form-control"
+                    id="medico-email"
+                    required
+                  />
+                </div>
+                <div class="col-md-4">
+                  <label for="medico-telefone" class="form-label"
+                    >Telefone</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="medico-telefone"
+                    required
+                  />
+                </div>
+                <div class="col-md-4">
+                  <label for="medico-crm" class="form-label">CRM</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="medico-crm"
+                    pattern="\d{4,6}"
+                    title="CRM deve ter entre 4 e 6 dígitos"
+                    required
+                  />
+                </div>
+                <div class="col-md-4">
+                  <label for="medico-especialidade" class="form-label"
+                    >Especialidade</label
+                  >
+                  <select
+                    id="medico-especialidade"
+                    class="form-select"
+                    required
+                  >
+                    <option value="">Selecione...</option>
+                    <option value="ORTOPEDIA">Ortopedia</option>
+                    <option value="CARDIOLOGIA">Cardiologia</option>
+                    <option value="GINECOLOGIA">Ginecologia</option>
+                    <option value="DERMATOLOGIA">Dermatologia</option>
+                  </select>
+                </div>
+
+                <!-- Endereço Médico Completo (Obrigatório no Backend) -->
+                <div class="col-md-12">
+                  <h6 class="text-muted mt-2">Endereço</h6>
+                  <div class="row g-2">
+                    <div class="col-md-2">
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="medico-cep"
+                        placeholder="CEP"
+                        pattern="\d{8}"
+                        required
+                      />
+                    </div>
+                    <div class="col-md-5">
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="medico-logradouro"
+                        placeholder="Logradouro"
+                        required
+                      />
+                    </div>
+                    <div class="col-md-2">
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="medico-numero"
+                        placeholder="Número"
+                      />
+                    </div>
+                    <div class="col-md-3">
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="medico-bairro"
+                        placeholder="Bairro"
+                        required
+                      />
+                    </div>
+                    <div class="col-md-4">
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="medico-cidade"
+                        placeholder="Cidade"
+                        required
+                      />
+                    </div>
+                    <div class="col-md-2">
+                      <select id="medico-uf" class="form-select" required>
+                        <option value="">UF</option>
+                        <option value="SP">SP</option>
+                        <option value="RJ">RJ</option>
+                        <option value="MG">MG</option>
+                        <option value="PR">PR</option>
+                        <option value="RS">RS</option>
+                      </select>
+                    </div>
+                    <div class="col-md-6">
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="medico-complemento"
+                        placeholder="Complemento"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="mt-4 text-end">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  onclick="toggleForm('form-medico-container')"
+                >
+                  Cancelar
+                </button>
+                <button type="submit" class="btn btn-success">
+                  Salvar Médico
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table
+            class="table table-striped table-hover table-bordered align-middle mb-0"
+          >
+            <thead class="table-light">
+              <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>CRM</th>
+                <th>Especialidade</th>
+                <th>Status</th>
+                <th class="text-center">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-medicos-body">
+              <!-- JS -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- VIEW: CONSULTAS -->
+      <section id="view-consultas" class="section-view">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h2><i class="bi bi-calendar-check"></i> Agendamento</h2>
+          <button class="btn btn-primary" onclick="prepararAgendamento()">
+            <i class="bi bi-plus-lg"></i> Agendar Consulta
+          </button>
+        </div>
+
+        <!-- Form Agendamento -->
+        <div
+          id="form-consulta-container"
+          class="card mb-4 d-none border-success"
+        >
+          <div class="card-header bg-success text-white">Nova Consulta</div>
+          <div class="card-body">
+            <form id="form-consulta" onsubmit="agendarConsulta(event)">
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <label for="consulta-paciente" class="form-label"
+                    >Paciente</label
+                  >
+                  <select id="consulta-paciente" class="form-select" required>
+                    <!-- Carregado via JS -->
+                  </select>
+                </div>
+                <div class="col-md-4">
+                  <label for="consulta-medico" class="form-label">Médico</label>
+                  <select id="consulta-medico" class="form-select" required>
+                    <!-- Carregado via JS -->
+                  </select>
+                </div>
+                <div class="col-md-4">
+                  <label for="consulta-data" class="form-label"
+                    >Data e Hora</label
+                  >
+                  <input
+                    type="datetime-local"
+                    class="form-control"
+                    id="consulta-data"
+                    required
+                  />
+                  <div class="form-text">
+                    Horário: 07:00 às 19:00 (Seg-Sáb). Duração fixa de 1h.
+                  </div>
+                </div>
+              </div>
+              <div class="mt-4 text-end">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  onclick="toggleForm('form-consulta-container')"
+                >
+                  Cancelar
+                </button>
+                <button type="submit" class="btn btn-success">Agendar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-striped table-hover align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>ID</th>
+                <th>Data/Hora</th>
+                <th>Paciente</th>
+                <th>Médico</th>
+                <th>Especialidade</th>
+                <th>Status</th>
+                <!-- Cancelada/Ativa -->
+                <th class="text-center">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-consultas-body">
+              <!-- JS -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <!-- MODAL EDITAR PACIENTE -->
+    <div class="modal fade" id="modalEditarPaciente" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Editar Paciente</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form id="form-editar-paciente">
+              <input type="hidden" id="edit-paciente-id" />
+              <div class="mb-3">
+                <label class="form-label">Nome</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="edit-paciente-nome"
+                  required
+                />
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Telefone</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="edit-paciente-telefone"
+                  required
+                />
+              </div>
+              <!-- Outros campos seriam aqui -->
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Fechar
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary"
+              onclick="salvarEdicaoPaciente()"
+            >
+              Salvar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL CANCELAR CONSULTA -->
+    <div class="modal fade" id="modalCancelarConsulta" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header bg-danger text-white">
+            <h5 class="modal-title">Cancelar Consulta</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <p>Tem certeza que deseja cancelar esta consulta?</p>
+            <input type="hidden" id="cancel-consulta-id" />
+            <div class="mb-3">
+              <label for="cancel-motivo" class="form-label"
+                >Motivo do Cancelamento</label
+              >
+              <select id="cancel-motivo" class="form-select" required>
+                <option value="PACIENTE_DESISTIU">Paciente desistiu</option>
+                <option value="MEDICO_CANCELOU">Médico cancelou</option>
+                <option value="OUTROS">Outros</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Voltar
+            </button>
+            <button
+              type="button"
+              class="btn btn-danger"
+              onclick="confirmarCancelamento()"
+            >
+              Confirmar Cancelamento
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- APP JAVASCRIPT -->
+    <script>
+      /**
+       * CONFIGURAÇÃO - Conecta exclusivamente ao backend Spring Boot
+       */
+      const API_BASE_URL = "http://localhost:8080";
+
+      // --- FUNÇÕES DE API GENÉRICAS ---
+
+      async function apiRequest(endpoint, method, body = null) {
+        try {
+          const options = {
+            method: method,
+            headers: { "Content-Type": "application/json" },
+          };
+          if (body) options.body = JSON.stringify(body);
+
+          const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            let errorMessage = `Erro ${response.status}`;
+            try {
+              const errorJson = JSON.parse(errorText);
+              // Tenta extrair mensagem amigável do Spring (ex: TratarErro400 ou mensagem direta)
+              errorMessage =
+                errorJson.message ||
+                (Array.isArray(errorJson) ? errorJson[0].mensagem : errorText);
+            } catch (e) {
+              errorMessage = errorText || errorMessage;
+            }
+            throw new Error(errorMessage);
+          }
+
+          // Se for DELETE ou status 204 (No Content), retorna null
+          if (response.status === 204) return null;
+          return await response.json();
+        } catch (error) {
+          showAlert(`${error.message}`, "danger");
+          throw error;
+        }
+      }
+
+      async function apiGet(url) {
+        return apiRequest(url, "GET");
+      }
+      async function apiPost(url, body) {
+        return apiRequest(url, "POST", body);
+      }
+      async function apiPut(url, body) {
+        return apiRequest(url, "PUT", body);
+      }
+      async function apiDelete(url, body = null) {
+        return apiRequest(url, "DELETE", body);
+      }
+
+      // --- MANIPULAÇÃO DE DOM E UI ---
+
+      function router(viewName) {
+        document
+          .querySelectorAll(".section-view")
+          .forEach((el) => el.classList.remove("active"));
+        document
+          .querySelectorAll(".nav-link")
+          .forEach((el) => el.classList.remove("active"));
+        const target = document.getElementById(`view-${viewName}`);
+        if (target) target.classList.add("active");
+
+        if (viewName === "pacientes") carregarPacientesTabela();
+        if (viewName === "medicos") carregarMedicosTabela();
+        if (viewName === "consultas") carregarConsultasTabela();
+      }
+
+      function toggleForm(formId) {
+        const el = document.getElementById(formId);
+        if (el.classList.contains("d-none")) {
+          el.classList.remove("d-none");
+        } else {
+          el.classList.add("d-none");
+        }
+      }
+
+      function showAlert(message, type = "success") {
+        const container = document.getElementById("alert-container");
+        const alertDiv = document.createElement("div");
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show shadow`;
+        alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+        container.appendChild(alertDiv);
+
+        setTimeout(() => {
+          alertDiv.remove();
+        }, 5000);
+      }
+
+      // --- LÓGICA DE PACIENTES ---
+
+      async function carregarPacientesTabela() {
+        try {
+          const res = await apiGet("/pacientes");
+          // Spring Data retorna Page no campo .content
+          const pacientes = res.content ? res.content : res;
+
+          const tbody = document.getElementById("tabela-pacientes-body");
+          tbody.innerHTML = "";
+
+          pacientes.forEach((p) => {
+            const ativo = p.ativo !== undefined ? p.ativo : true;
+            const statusClass = ativo ? "status-true" : "status-false";
+            const statusText = ativo ? "Ativo" : "Inativo";
+            const row = `
+                        <tr>
+                            <td>${p.id || "-"}</td>
+                            <td>${p.nome}</td>
+                            <td>${p.email}</td>
+                            <td>${p.cpf}</td>
+                            <td><span class="${statusClass}">${statusText}</span></td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-outline-primary" onclick="abrirModalEditarPaciente(${
+                                  p.id
+                                })"><i class="bi bi-pencil"></i></button>
+                                ${
+                                  ativo
+                                    ? `<button class="btn btn-sm btn-outline-danger" onclick="inativarPaciente(${p.id})"><i class="bi bi-x-circle"></i></button>`
+                                    : ""
+                                }
+                            </td>
+                        </tr>
+                    `;
+            tbody.innerHTML += row;
+          });
+        } catch (err) {
+          console.error("Erro ao carregar pacientes:", err);
+        }
+      }
+
+      async function cadastrarPaciente(e) {
+        e.preventDefault();
+        const dados = {
+          nome: document.getElementById("paciente-nome").value,
+          email: document.getElementById("paciente-email").value,
+          cpf: document.getElementById("paciente-cpf").value,
+          telefone: document.getElementById("paciente-telefone").value,
+          endereco: {
+            logradouro: document.getElementById("paciente-logradouro").value,
+            numero: document.getElementById("paciente-numero").value,
+            cep: document.getElementById("paciente-cep").value,
+            cidade: document.getElementById("paciente-cidade").value,
+            uf: document.getElementById("paciente-uf").value,
+            bairro: document.getElementById("paciente-bairro").value,
+            complemento: document.getElementById("paciente-complemento").value,
+          },
+        };
+
+        try {
+          // Endpoint POST /pacientes/cadastro
+          await apiPost("/pacientes/cadastro", dados);
+          showAlert("Paciente cadastrado com sucesso!");
+          document.getElementById("form-paciente").reset();
+          toggleForm("form-paciente-container");
+          carregarPacientesTabela();
+        } catch (err) {
+          // Erro tratado no apiRequest
+        }
+      }
+
+      async function inativarPaciente(id) {
+        if (!confirm("Deseja inativar este paciente?")) return;
+        try {
+          await apiDelete(`/pacientes/${id}`);
+          showAlert("Paciente inativado.");
+          carregarPacientesTabela();
+        } catch (err) {
+          // Erro tratado
+        }
+      }
+
+      // --- LÓGICA DE MÉDICOS ---
+
+      async function carregarMedicosTabela() {
+        try {
+          const res = await apiGet("/medicos");
+          const medicos = res.content ? res.content : res;
+          const tbody = document.getElementById("tabela-medicos-body");
+          tbody.innerHTML = "";
+
+          medicos.forEach((m) => {
+            const id = m.id || "-";
+            const ativo = m.ativo !== undefined ? m.ativo : true;
+            const statusClass = ativo ? "status-true" : "status-false";
+
+            const row = `
+                        <tr>
+                            <td>${id}</td>
+                            <td>${m.nome}</td>
+                            <td>${m.crm}</td>
+                            <td>${m.especialidade}</td>
+                            <td><span class="${statusClass}">${
+              ativo ? "Ativo" : "Inativo"
+            }</span></td>
+                            <td class="text-center">
+                                ${
+                                  ativo
+                                    ? `<button class="btn btn-sm btn-outline-danger" onclick="inativarMedico(${id})"><i class="bi bi-trash"></i></button>`
+                                    : ""
+                                }
+                            </td>
+                        </tr>
+                    `;
+            tbody.innerHTML += row;
+          });
+        } catch (err) {
+          console.error("Erro ao carregar médicos:", err);
+        }
+      }
+
+      async function cadastrarMedico(e) {
+        e.preventDefault();
+        const dados = {
+          nome: document.getElementById("medico-nome").value,
+          email: document.getElementById("medico-email").value,
+          telefone: document.getElementById("medico-telefone").value,
+          crm: document.getElementById("medico-crm").value,
+          especialidade: document.getElementById("medico-especialidade").value,
+          endereco: {
+            logradouro: document.getElementById("medico-logradouro").value,
+            bairro: document.getElementById("medico-bairro").value,
+            cep: document.getElementById("medico-cep").value,
+            cidade: document.getElementById("medico-cidade").value,
+            uf: document.getElementById("medico-uf").value,
+            numero: document.getElementById("medico-numero").value,
+            complemento: document.getElementById("medico-complemento").value,
+          },
+        };
+
+        try {
+          await apiPost("/medicos/cadastro", dados);
+          showAlert("Médico cadastrado!");
+          document.getElementById("form-medico").reset();
+          toggleForm("form-medico-container");
+          carregarMedicosTabela();
+        } catch (err) {
+          // Erro tratado
+        }
+      }
+
+      async function inativarMedico(id) {
+        if (!confirm("Inativar médico?")) return;
+        try {
+          await apiDelete(`/medicos/${id}`);
+          carregarMedicosTabela();
+        } catch (err) {
+          // Erro tratado
+        }
+      }
+
+      // --- LÓGICA DE CONSULTAS ---
+
+      async function carregarConsultasTabela() {
+        try {
+          // Tentativa de listar consultas.
+          // Se o backend não tiver GET /consultas, retornará erro e cairá no catch.
+          const consultas = await apiGet("/consultas");
+          const list = consultas.content ? consultas.content : consultas;
+
+          const tbody = document.getElementById("tabela-consultas-body");
+          tbody.innerHTML = "";
+
+          // Ordenar por data mais recente
+          list.sort((a, b) => new Date(b.data) - new Date(a.data));
+
+          list.forEach((c) => {
+            const dateObj = new Date(c.data);
+            const formattedDate = dateObj.toLocaleString("pt-BR");
+            const isCancelled = c.status === "CANCELADA";
+            const rowClass = isCancelled ? "table-secondary text-muted" : "";
+
+            const row = `
+                        <tr class="${rowClass}">
+                            <td>${c.id}</td>
+                            <td>${formattedDate}</td>
+                            <td>${c.nomePaciente || "ID: " + c.idPaciente}</td>
+                            <td>${c.nomeMedico || "ID: " + c.idMedico}</td>
+                            <td>${c.especialidade}</td>
+                            <td>
+                                ${
+                                  isCancelled
+                                    ? `<span class="badge bg-danger">Cancelada</span>`
+                                    : `<span class="badge bg-success">Ativa</span>`
+                                }
+                                ${
+                                  isCancelled
+                                    ? `<br><small>${c.motivoCancelamento}</small>`
+                                    : ""
+                                }
+                            </td>
+                            <td class="text-center">
+                                ${
+                                  !isCancelled
+                                    ? `<button class="btn btn-sm btn-danger" onclick="abrirModalCancelar(${c.id})">Cancelar</button>`
+                                    : "-"
+                                }
+                            </td>
+                        </tr>
+                    `;
+            tbody.innerHTML += row;
+          });
+        } catch (err) {
+          console.warn(
+            "Não foi possível carregar a lista de consultas (Endpoint GET /consultas pode estar ausente ou inativo).",
+            err
+          );
+        }
+      }
+
+      async function prepararAgendamento() {
+        toggleForm("form-consulta-container");
+        const selectPac = document.getElementById("consulta-paciente");
+        const selectMed = document.getElementById("consulta-medico");
+
+        try {
+          // Carrega listas para os selects
+          const pacsRes = await apiGet("/pacientes");
+          const pacs = pacsRes.content ? pacsRes.content : pacsRes;
+
+          const medsRes = await apiGet("/medicos");
+          const meds = medsRes.content ? medsRes.content : medsRes;
+
+          selectPac.innerHTML =
+            '<option value="">Selecione o Paciente...</option>';
+          pacs.forEach((p) => {
+            // Assume que o objeto de listagem tem ID e Nome
+            if (p.id)
+              selectPac.innerHTML += `<option value="${p.id}">${p.nome}</option>`;
+          });
+
+          selectMed.innerHTML =
+            '<option value="">Selecione o Médico...</option>';
+          meds.forEach((m) => {
+            if (m.id)
+              selectMed.innerHTML += `<option value="${m.id}">${m.nome} - ${m.especialidade}</option>`;
+          });
+        } catch (e) {
+          console.error("Erro ao carregar dados para agendamento:", e);
+        }
+      }
+
+      async function agendarConsulta(e) {
+        e.preventDefault();
+        const dados = {
+          idPaciente: document.getElementById("consulta-paciente").value,
+          idMedico: document.getElementById("consulta-medico").value,
+          data: document.getElementById("consulta-data").value,
+        };
+
+        try {
+          await apiPost("/consultas", dados);
+          showAlert("Consulta agendada com sucesso!");
+          document.getElementById("form-consulta").reset();
+          toggleForm("form-consulta-container");
+          carregarConsultasTabela();
+        } catch (err) {
+          // Erro já tratado no apiRequest (exibe validações de negócio do backend)
+        }
+      }
+
+      // Cancelamento
+      let consultaIdParaCancelar = null;
+      function abrirModalCancelar(id) {
+        consultaIdParaCancelar = id;
+        const modal = new bootstrap.Modal(
+          document.getElementById("modalCancelarConsulta")
+        );
+        modal.show();
+      }
+
+      async function confirmarCancelamento() {
+        const motivo = document.getElementById("cancel-motivo").value;
+        try {
+          // O backend espera um body no DELETE
+          await apiRequest("/consultas", "DELETE", {
+            idConsulta: consultaIdParaCancelar,
+            motivo: motivo,
+          });
+
+          showAlert("Consulta cancelada.");
+          const el = document.getElementById("modalCancelarConsulta");
+          const modal = bootstrap.Modal.getInstance(el);
+          modal.hide();
+          carregarConsultasTabela();
+        } catch (err) {
+          // Erro tratado
+        }
+      }
+
+      // Edição Paciente
+      let pacienteIdParaEditar = null;
+      function abrirModalEditarPaciente(id) {
+        pacienteIdParaEditar = id;
+        // Busca dados atuais do paciente via endpoint de detalhamento
+        apiGet(`/pacientes/${id}`)
+          .then((p) => {
+            document.getElementById("edit-paciente-nome").value = p.nome;
+            document.getElementById("edit-paciente-telefone").value =
+              p.telefone;
+            const modal = new bootstrap.Modal(
+              document.getElementById("modalEditarPaciente")
+            );
+            modal.show();
+          })
+          .catch((err) =>
+            console.error("Erro ao buscar detalhes do paciente:", err)
+          );
+      }
+
+      async function salvarEdicaoPaciente() {
+        const dados = {
+          id: pacienteIdParaEditar,
+          nome: document.getElementById("edit-paciente-nome").value,
+          telefone: document.getElementById("edit-paciente-telefone").value,
+        };
+        try {
+          await apiPut("/pacientes", dados);
+          showAlert("Dados atualizados");
+          const el = document.getElementById("modalEditarPaciente");
+          const modal = bootstrap.Modal.getInstance(el);
+          modal.hide();
+          carregarPacientesTabela();
+        } catch (e) {
+          // Erro tratado
+        }
+      }
+
+      // Iniciar
+      document.addEventListener("DOMContentLoaded", () => {
+        // Inicialização se necessária
+      });
+    </script>
+  </body>
+</html>
