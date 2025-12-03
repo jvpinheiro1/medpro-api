@@ -1003,9 +1003,8 @@
 
       async function carregarConsultasTabela() {
         try {
-          // Tentativa de listar consultas.
-          // Se o backend não tiver GET /consultas, retornará erro e cairá no catch.
           const consultas = await apiGet("/consultas");
+          // O Spring retorna o array dentro de 'content' quando é paginado
           const list = consultas.content ? consultas.content : consultas;
 
           const tbody = document.getElementById("tabela-consultas-body");
@@ -1017,15 +1016,18 @@
           list.forEach((c) => {
             const dateObj = new Date(c.data);
             const formattedDate = dateObj.toLocaleString("pt-BR");
-            const isCancelled = c.status === "CANCELADA";
+            const isCancelled = c.status === "CANCELADA"; // Verifica o Enum vindo do Java
             const rowClass = isCancelled ? "table-secondary text-muted" : "";
+            
+            // Tratamento para garantir que o motivo não apareça como "null" na tela
+            const motivoTexto = c.motivoCancelamento ? `<br><small>Motivo: ${c.motivoCancelamento}</small>` : "";
 
             const row = `
                         <tr class="${rowClass}">
                             <td>${c.id}</td>
                             <td>${formattedDate}</td>
-                            <td>${c.nomePaciente || "ID: " + c.idPaciente}</td>
-                            <td>${c.nomeMedico || "ID: " + c.idMedico}</td>
+                            <td>${c.nomePaciente}</td>
+                            <td>${c.nomeMedico}</td>
                             <td>${c.especialidade}</td>
                             <td>
                                 ${
@@ -1033,11 +1035,7 @@
                                     ? `<span class="badge bg-danger">Cancelada</span>`
                                     : `<span class="badge bg-success">Ativa</span>`
                                 }
-                                ${
-                                  isCancelled
-                                    ? `<br><small>${c.motivoCancelamento}</small>`
-                                    : ""
-                                }
+                                ${isCancelled ? motivoTexto : ""}
                             </td>
                             <td class="text-center">
                                 ${
@@ -1051,10 +1049,8 @@
             tbody.innerHTML += row;
           });
         } catch (err) {
-          console.warn(
-            "Não foi possível carregar a lista de consultas (Endpoint GET /consultas pode estar ausente ou inativo).",
-            err
-          );
+          console.warn("Erro ao carregar lista de consultas:", err);
+          showAlert("Erro ao carregar consultas.", "danger");
         }
       }
 
