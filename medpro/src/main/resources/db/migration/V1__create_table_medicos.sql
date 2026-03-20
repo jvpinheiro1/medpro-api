@@ -1,6 +1,6 @@
 create table medicos(
 
-    id bigint not null auto_increment,
+    id bigint not null generated always as identity,
     nome varchar(100) not null,
     email varchar(100) not null unique,
     crm varchar(6) not null unique,

@@ -1,9 +1,9 @@
 create table consultas(
 
-    id bigint not null auto_increment,
+    id bigint not null generated always as identity,
     paciente_id bigint not null,
     medico_id bigint not null,
-    data_consulta datetime not null,
+    data_consulta timestamp not null,
     status varchar(50) not null,
     motivo_cancelamento varchar(255),
 

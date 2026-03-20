@@ -1,0 +1,14 @@
+services:
+  db:
+    image: postgres:15
+    container_name: medpro-db
+    environment:
+      POSTGRES_USER: medpro_user
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: medpro
+    ports:
+      - "5433:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+volumes:
+  db_data:
