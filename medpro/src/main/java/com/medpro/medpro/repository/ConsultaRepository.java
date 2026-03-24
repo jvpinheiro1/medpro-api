@@ -3,6 +3,7 @@ package com.medpro.medpro.repository;
 import java.time.LocalDateTime;
 import org.springframework.data.jpa.repository.JpaRepository;
 import com.medpro.medpro.model.entity.Consulta;
+import com.medpro.medpro.model.entity.StatusConsulta;
 
 public interface ConsultaRepository extends JpaRepository<Consulta, Long> {
     
@@ -17,5 +18,8 @@ public interface ConsultaRepository extends JpaRepository<Consulta, Long> {
     boolean existsByMedicoIdAndDataConsultaBetween(Long idMedico,
                                                LocalDateTime inicio,
                                                LocalDateTime fim);
-                                                 
+
+    boolean existsByPacienteIdAndStatus(Long pacienteId, StatusConsulta status);                                                 
+    
+    boolean existsByMedicoIdAndStatus(Long medicoId, StatusConsulta status);
 }

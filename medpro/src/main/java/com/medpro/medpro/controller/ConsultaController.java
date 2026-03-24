@@ -31,7 +31,7 @@ public class ConsultaController {
     @PostMapping
     public ResponseEntity<DadosDetalhamentoConsulta> agendar(@RequestBody @Valid DadosAgendamentoConsulta dados) {        
         DadosDetalhamentoConsulta dadosDetalhamentoConsulta = consultaService.agendar(dados);
-        return ResponseEntity.ok(dadosDetalhamentoConsulta);
+        return ResponseEntity.status(201).body(dadosDetalhamentoConsulta);
     }
 
     @DeleteMapping
