@@ -30,7 +30,7 @@ public class MedicoController {
         this.medicoService = medicoService;
     }
 
-    @PostMapping("/cadastro")
+    @PostMapping
     public ResponseEntity<DadosDetalhamentoMedico> cadastrar(@RequestBody @Valid DadosCadastroMedico dados) {
         DadosDetalhamentoMedico dadosDetalhamentoMedico = medicoService.cadastrar(dados);
         return ResponseEntity.status(201).body(dadosDetalhamentoMedico);
