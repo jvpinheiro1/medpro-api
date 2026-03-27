@@ -8,10 +8,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.medpro.medpro.model.DadosTokenJWT;
 import com.medpro.medpro.model.dto.DadosAutenticacao;
-import com.medpro.medpro.model.dto.DadosTokenJWT;
-import com.medpro.medpro.model.entity.Usuario;
-import com.medpro.medpro.security.TokenService;
+import com.medpro.medpro.model.entity.User;
+import com.medpro.medpro.service.TokenService;
 
 import jakarta.validation.Valid;
 
@@ -19,20 +19,23 @@ import jakarta.validation.Valid;
 @RequestMapping("/auth")
 public class AuthController {
 
-    private final AuthenticationManager authenticationManager;
     private final TokenService tokenService;
+    private final AuthenticationManager authenticationManager;
 
-    public AuthController(AuthenticationManager authenticationManager, TokenService tokenService) {
-        this.authenticationManager = authenticationManager;
+    public AuthController(TokenService tokenService, AuthenticationManager authenticationManager) {
         this.tokenService = tokenService;
+        this.authenticationManager = authenticationManager;
     }
 
     @PostMapping("/login")
     public ResponseEntity<DadosTokenJWT> login(@RequestBody @Valid DadosAutenticacao dados) {
-        var authenticationToken = new UsernamePasswordAuthenticationToken(dados.email(), dados.senha());
+        var authenticationToken = new UsernamePasswordAuthenticationToken(
+                dados.login(), dados.password());
         var authentication = authenticationManager.authenticate(authenticationToken);
-        String tokenJWT = tokenService.gerarToken((Usuario) authentication.getPrincipal());
-
-        return ResponseEntity.ok(new DadosTokenJWT(tokenJWT));
+        var usuarioAutenticado = (User) authentication.getPrincipal();
+        String tokenJWT = tokenService.gerarToken(usuarioAutenticado);
+        var dadosToken = new DadosTokenJWT(tokenJWT);
+        return ResponseEntity.ok(dadosToken);
     }
+
 }

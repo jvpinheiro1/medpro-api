@@ -2,7 +2,6 @@ package com.medpro.medpro.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -10,43 +9,27 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final SecurityFilter securityFilter;
-
-    public SecurityConfig(SecurityFilter securityFilter) {
-        this.securityFilter = securityFilter;
-    }
-
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
-                .requestMatchers(HttpMethod.DELETE, "/medicos/**", "/pacientes/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.POST, "/medicos").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/medicos/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.POST, "/pacientes").hasAnyRole("ADMIN", "RECEPCIONISTA")
-                .requestMatchers(HttpMethod.PUT, "/pacientes/**").hasAnyRole("ADMIN", "RECEPCIONISTA")
-                .requestMatchers(HttpMethod.POST, "/consultas").hasAnyRole("ADMIN", "RECEPCIONISTA")
-                .requestMatchers(HttpMethod.DELETE, "/consultas").hasAnyRole("ADMIN", "RECEPCIONISTA")
-                .requestMatchers(HttpMethod.GET, "/**").authenticated()
-                .anyRequest().authenticated())
-            .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class);
+            // Configura o filtro de segurança personalizado para validar os tokens JWT
+            .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+            .addFilterBefore(new SecurityFilter(tokenService), SecurityFilter.class);
 
         return http.build();
     }
 
+    // Configura o AuthenticationManager para ser usado no AuthController
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
-            throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 

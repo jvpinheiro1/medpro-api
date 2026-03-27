@@ -1,8 +1,5 @@
 package com.medpro.medpro.model.dto;
 
-import jakarta.validation.constraints.NotBlank;
+public record DadosAutenticacao(String login, String password) {
 
-public record DadosAutenticacao(
-        @NotBlank String email,
-        @NotBlank String senha) {
 }
