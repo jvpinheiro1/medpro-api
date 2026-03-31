@@ -8,6 +8,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.medpro.medpro.enums.EnumRole;
+import com.medpro.medpro.model.dto.DadosCadastroUsuario;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -27,15 +28,16 @@ public class User implements UserDetails{
     private String password;
     @Enumerated(EnumType.STRING)
     private EnumRole role;
+    private Long medicoId;
     
     public User() {
     }
 
-    public User(Long id, String login, String password, EnumRole role) {
-        this.id = id;
+    public User(String login, String password, EnumRole role, Long medicoId) {
         this.login = login;
         this.password = password;
         this.role = role;
+        this.medicoId = medicoId;
     }
 
     public Long getId() {
@@ -68,6 +70,14 @@ public class User implements UserDetails{
 
     public void setRole(EnumRole role) {
         this.role = role;
+    }
+
+    public Long getMedicoId() {
+        return medicoId;
+    }
+
+    public void setMedicoId(Long medicoId) {
+        this.medicoId = medicoId;
     }
 
     @Override

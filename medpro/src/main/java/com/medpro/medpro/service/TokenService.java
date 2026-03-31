@@ -23,14 +23,20 @@ public class TokenService {
     }
 
     public String gerarToken(User usuario) {
-         Algorithm algorithm = Algorithm.HMAC256(secretKey);
-         return JWT.create()
-                 .withIssuer("medpro-api")
-                 .withSubject(usuario.getLogin())
-                 .withClaim("role", usuario.getRole().name())
-                 .withExpiresAt(LocalDateTime.now().plusHours(2).toInstant(ZoneOffset.of("-03:00")))
-                 .sign(algorithm);
+    Algorithm algorithm = Algorithm.HMAC256(secretKey);
+    var jwtBuilder = JWT.create()
+            .withIssuer("medpro-api")
+            .withSubject(usuario.getLogin())
+            .withClaim("role", usuario.getRole().name())
+            .withClaim("id", usuario.getId()); // Injetando o ID do usuário
+
+    if (usuario.getMedicoId() != null) {
+        jwtBuilder.withClaim("medicoId", usuario.getMedicoId());
     }
+    return jwtBuilder
+            .withExpiresAt(LocalDateTime.now().plusHours(2).toInstant(ZoneOffset.of("-03:00")))
+            .sign(algorithm);
+}
 
     public String validarToken(String token) {
         try {

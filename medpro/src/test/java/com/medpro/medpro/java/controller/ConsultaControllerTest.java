@@ -70,7 +70,8 @@ public class ConsultaControllerTest {
 
     @BeforeEach
     void setUp() {
-        adminUser = new User(1L, "admin", "password", EnumRole.ADMIN);
+        adminUser = new User("admin", "password", EnumRole.ADMIN, null);
+        adminUser.setId(1L);
     }
 
     private void mockAutenticacao() {
