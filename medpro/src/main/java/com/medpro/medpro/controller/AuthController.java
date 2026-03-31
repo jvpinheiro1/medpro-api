@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.medpro.medpro.model.DadosTokenJWT;
 import com.medpro.medpro.model.dto.DadosAutenticacao;
+import com.medpro.medpro.model.dto.DadosTokenJWT;
 import com.medpro.medpro.model.entity.User;
 import com.medpro.medpro.service.TokenService;
 
@@ -29,13 +29,10 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<DadosTokenJWT> login(@RequestBody @Valid DadosAutenticacao dados) {
-        var authenticationToken = new UsernamePasswordAuthenticationToken(
-                dados.login(), dados.password());
+        var authenticationToken = new UsernamePasswordAuthenticationToken(dados.login(), dados.password());
         var authentication = authenticationManager.authenticate(authenticationToken);
-        var usuarioAutenticado = (User) authentication.getPrincipal();
-        String tokenJWT = tokenService.gerarToken(usuarioAutenticado);
-        var dadosToken = new DadosTokenJWT(tokenJWT);
-        return ResponseEntity.ok(dadosToken);
+        var tokenJWT = tokenService.gerarToken((User) authentication.getPrincipal());
+        return ResponseEntity.ok(new DadosTokenJWT(tokenJWT));
     }
 
 }

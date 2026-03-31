@@ -1,4 +1,4 @@
-package com.medpro.medpro.model;
+package com.medpro.medpro.model.dto;
 
 public record DadosTokenJWT(String token) {
 

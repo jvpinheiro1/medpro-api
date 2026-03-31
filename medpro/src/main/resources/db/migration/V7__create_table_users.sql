@@ -1,4 +1,4 @@
-create table usuarios(
+create table users(
 
     id bigint not null generated always as identity,
     login varchar(100) not null,
@@ -6,5 +6,5 @@ create table usuarios(
     role varchar(30) not null,
 
     primary key(id),
-    constraint uk_usuarios_login unique(login)
+    constraint uk_users_login unique(login)
 );

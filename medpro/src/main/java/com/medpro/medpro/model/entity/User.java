@@ -10,6 +10,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import com.medpro.medpro.enums.EnumRole;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -23,6 +25,7 @@ public class User implements UserDetails{
     private Long id;
     private String login;
     private String password;
+    @Enumerated(EnumType.STRING)
     private EnumRole role;
     
     public User() {

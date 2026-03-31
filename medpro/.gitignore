@@ -43,6 +43,7 @@ application-prod.properties
 ### Logs ###
 *.log
 logs/
+hs_err_pid*.log
 
 ### OS ###
 .DS_Store
