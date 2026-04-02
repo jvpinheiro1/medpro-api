@@ -8,7 +8,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.medpro.medpro.enums.EnumRole;
-import com.medpro.medpro.model.dto.DadosCadastroUsuario;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

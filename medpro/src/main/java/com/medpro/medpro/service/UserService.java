@@ -7,8 +7,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.medpro.medpro.enums.EnumRole;
+import com.medpro.medpro.message.UsuarioProducer;
 import com.medpro.medpro.model.dto.DadosCadastroUsuario;
 import com.medpro.medpro.model.dto.DadosDetalhamentoUsuario;
+import com.medpro.medpro.model.dto.UserRegisteredEvent;
 import com.medpro.medpro.model.entity.User;
 import com.medpro.medpro.repository.MedicoRepository;
 import com.medpro.medpro.repository.UserRepository;
@@ -19,11 +21,13 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final MedicoRepository medicoRepository;
+    private final UsuarioProducer usuarioProducer;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, MedicoRepository medicoRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, MedicoRepository medicoRepository, UsuarioProducer usuarioProducer) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.medicoRepository = medicoRepository;
+        this.usuarioProducer = usuarioProducer;
     }
 
     @Transactional
@@ -40,7 +44,12 @@ public class UserService {
         var user = new User(dados.login(), senhaCriptografada, EnumRole.valueOf(dados.role()), dados.medicoId());
 
         userRepository.save(user);
+        usuarioProducer.enviarNotificacao(criarEvento(user));
         return new DadosDetalhamentoUsuario(user);
+    }
+
+    private UserRegisteredEvent criarEvento(User user) {
+        return new UserRegisteredEvent(user.getLogin(), user.getRole().name(), user.getMedicoId());
     }
 
     public Page<DadosDetalhamentoUsuario> listar(Pageable paginacao) {
